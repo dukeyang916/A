@@ -24,8 +24,20 @@ function formatTime(ts: number): string {
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
+const ADD_EXPENSE_ROUTES = [
+  '/pages/expense-edit/index',
+  '/pages/ai-chat/index',
+  '/pages/ai-photo/index',
+  '/pages/ai-voice/index',
+]
+
 function goAddExpense() {
-  uni.navigateTo({ url: `/pages/expense-edit/index?tripId=${tripId.value}` })
+  uni.showActionSheet({
+    itemList: ['手动记一笔', '对话记账', '拍照记账', '语音记账'],
+    success: (res) => {
+      uni.navigateTo({ url: `${ADD_EXPENSE_ROUTES[res.tapIndex]}?tripId=${tripId.value}` })
+    },
+  })
 }
 
 function goEditExpense(expenseId: string) {

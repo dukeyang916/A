@@ -30,7 +30,14 @@ const SPLIT_METHOD_LABELS: Record<SplitMethod, string> = {
 const splitMethodEntries = Object.entries(SPLIT_METHOD_LABELS) as [SplitMethod, string][]
 
 onLoad((query) => {
-  const q = query as { tripId: string; expenseId?: string }
+  const q = query as {
+    tripId: string
+    expenseId?: string
+    prefillAmount?: string
+    prefillCategory?: string
+    prefillNote?: string
+    prefillPayerId?: string
+  }
   tripId.value = q.tripId
   workspace.load(q.tripId)
 
@@ -58,6 +65,17 @@ onLoad((query) => {
   const me = workspace.members.find((m) => m.isMe)
   payerId.value = me?._id ?? workspace.members[0]?._id ?? ''
   participantIds.value = workspace.members.map((m) => m._id)
+
+  // AI 录入（语音/拍照/对话）跳转过来时带的预填值，用户在这个页面仍可随意修改
+  const prefillAmount = Number.parseFloat(q.prefillAmount ?? '')
+  if (prefillAmount > 0) amountText.value = String(prefillAmount)
+  if (q.prefillCategory && EXPENSE_CATEGORIES.some((c) => c.value === q.prefillCategory)) {
+    category.value = q.prefillCategory as ExpenseCategory
+  }
+  if (q.prefillNote) note.value = q.prefillNote
+  if (q.prefillPayerId && workspace.members.some((m) => m._id === q.prefillPayerId)) {
+    payerId.value = q.prefillPayerId
+  }
 })
 
 const amount = computed(() => Number.parseFloat(amountText.value) || 0)

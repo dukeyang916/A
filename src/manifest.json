@@ -35,9 +35,16 @@
             "urlCheck" : false
         },
         "usingComponents" : true,
+        "cloudfunctionRoot" : "cloudfunctions/",
         "permission" : {
             "scope.userLocation" : {
                 "desc" : "用于在创建行程时自动定位目的地城市"
+            },
+            "scope.record" : {
+                "desc" : "用于语音记账时录制你的语音"
+            },
+            "scope.camera" : {
+                "desc" : "用于拍照识别小票"
             }
         }
     },

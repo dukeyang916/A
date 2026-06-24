@@ -31,6 +31,24 @@
 			}
 		},
 		{
+			"path": "pages/ai-chat/index",
+			"style": {
+				"navigationBarTitleText": "对话记账"
+			}
+		},
+		{
+			"path": "pages/ai-photo/index",
+			"style": {
+				"navigationBarTitleText": "拍照记账"
+			}
+		},
+		{
+			"path": "pages/ai-voice/index",
+			"style": {
+				"navigationBarTitleText": "语音记账"
+			}
+		},
+		{
 			"path": "pages/settlement/index",
 			"style": {
 				"navigationBarTitleText": "结算"
