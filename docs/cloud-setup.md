@@ -6,7 +6,7 @@ v1.1 的语音记账 / 拍照识别小票 / 对话式记账，依赖微信云开
 
 ## 1. 开通微信云开发
 
-1. 用小程序管理员账号登录[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，打开本项目编译后的小程序目录（`npm run dev:mp-weixin` 产出的 `dist/dev/mp-weixin`）。
+1. 用小程序管理员账号登录[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)，打开本项目编译后的小程序目录（`npm run build:mp-weixin` 产出的 `dist/build/mp-weixin`，这个命令会自动把 `cloudfunctions/` 一起拷过去，用 `dev:mp-weixin` 的话云函数目录不会自动同步）。
 2. 工具顶部菜单「云开发」→ 首次使用会引导开通，选按量计费或有免费额度的套餐都可以。
 3. 开通后，云开发控制台顶部能看到环境 ID（形如 `xxx-1a2b3c4d5e`），把它填进 `src/constants/cloud.ts` 的 `CLOUD_ENV_ID`。
 
