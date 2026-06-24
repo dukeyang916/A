@@ -1,0 +1,55 @@
+{
+    "name" : "旅程拼账",
+    "appid" : "",
+    "description" : "面向旅行场景的多人分账与结算工具",
+    "versionName" : "0.1.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {},
+        "distribute" : {
+            "android" : {
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>"
+                ]
+            },
+            "ios" : {},
+            "sdkConfigs" : {}
+        }
+    },
+    "mp-weixin" : {
+        "appid" : "wxf5a72ad4e78d94e6",
+        "setting" : {
+            "urlCheck" : false
+        },
+        "usingComponents" : true,
+        "cloudfunctionRoot" : "cloudfunctions/",
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "用于在创建行程时自动定位目的地城市"
+            },
+            "scope.record" : {
+                "desc" : "用于语音记账时录制你的语音"
+            },
+            "scope.camera" : {
+                "desc" : "用于拍照识别小票"
+            }
+        }
+    },
+    "uniStatistics": {
+        "enable": false
+    },
+    "vueVersion" : "3"
+}

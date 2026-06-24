@@ -1,0 +1,82 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "我的行程"
+			}
+		},
+		{
+			"path": "pages/trip-create/index",
+			"style": {
+				"navigationBarTitleText": "创建行程"
+			}
+		},
+		{
+			"path": "pages/trip-join/index",
+			"style": {
+				"navigationBarTitleText": "加入行程"
+			}
+		},
+		{
+			"path": "pages/trip-detail/index",
+			"style": {
+				"navigationBarTitleText": "行程详情"
+			}
+		},
+		{
+			"path": "pages/member-manage/index",
+			"style": {
+				"navigationBarTitleText": "成员管理"
+			}
+		},
+		{
+			"path": "pages/expense-edit/index",
+			"style": {
+				"navigationBarTitleText": "记一笔"
+			}
+		},
+		{
+			"path": "pages/ai-chat/index",
+			"style": {
+				"navigationBarTitleText": "对话记账"
+			}
+		},
+		{
+			"path": "pages/ai-photo/index",
+			"style": {
+				"navigationBarTitleText": "拍照记账"
+			}
+		},
+		{
+			"path": "pages/ai-voice/index",
+			"style": {
+				"navigationBarTitleText": "语音记账"
+			}
+		},
+		{
+			"path": "pages/settlement/index",
+			"style": {
+				"navigationBarTitleText": "结算"
+			}
+		},
+		{
+			"path": "pages/settlement-share/index",
+			"style": {
+				"navigationBarTitleText": "分享结算结果"
+			}
+		},
+		{
+			"path": "pages/settings/index",
+			"style": {
+				"navigationBarTitleText": "设置"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "旅程拼账",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F5F6FA"
+	}
+}
