@@ -19,13 +19,20 @@ export interface ShareSnapshot {
   updatedAt: number
 }
 
+export interface CreateShareResult {
+  shareCode: string
+  /** 当前设备这个人的 openId，调用方要把它存到本地"我"这个成员上，否则下次本地 push 算不出
+   *  正确的 memberOpenIds（其实 push 已经不传这个字段了，但 members 里仍该带上 openId 才准确） */
+  myOpenId: string
+}
+
 /** 把本地行程第一次上传到云端开启协作，返回邀请码；已经开过的话云函数会原样把已有邀请码返回 */
-export function createShare(trip: Trip, members: Member[], expenses: Expense[]): Promise<string> {
-  return callCloudFunction<{ shareCode: string }>(
+export function createShare(trip: Trip, members: Member[], expenses: Expense[]): Promise<CreateShareResult> {
+  return callCloudFunction<CreateShareResult>(
     'tripShareCreate',
     { tripId: trip._id, trip, members, expenses },
     NOT_SUPPORTED_ERROR
-  ).then((res) => res.shareCode)
+  )
 }
 
 export interface JoinShareResult {
@@ -62,20 +69,22 @@ export function pullShare(tripId: string): Promise<ShareSnapshot | null> {
 }
 
 /**
- * 把本地最新状态整份覆盖写回云端。memberOpenIds 直接从当前 members 里有 openId 的那些人
- * 派生，不单独维护：谁被移出了 members，谁的云端读写权限就自然跟着收回。
+ * 把本地最新状态整份覆盖写回云端。不碰 memberOpenIds 字段：它只由云函数维护
+ * （tripShareCreate 建文档时种下创建者，tripShareJoin 每次加入时 push 新人），
+ * 客户端这边的 members 在本机刚邀请/还没来得及拉取协作者的最新名单时可能是不完整的，
+ * 如果连带把 memberOpenIds 也覆盖上去，会把刚加入还没同步到本机的协作者从权限名单里
+ * 抹掉，导致安全规则把所有人（包括自己）都挡在外面，且没有任何报错提示。
  * 失败静默吞掉——这只是本地写入成功之后的"顺便同步一下"，不该让本地操作显示失败，
  * 下次任意一端 pull 或者下次再 push 时会用最新数据覆盖一次。
  */
 export function pushShare(tripId: string, trip: Trip, members: Member[], expenses: Expense[]): Promise<void> {
   if (!isCloudReady()) return Promise.resolve()
-  const memberOpenIds = members.filter((m) => m.openId).map((m) => m.openId as string)
   return wx.cloud
     .database()
-    .collection<SharedTripDoc & { memberOpenIds: string[] }>(COLLECTION)
+    .collection<SharedTripDoc>(COLLECTION)
     .doc(tripId)
     .update({
-      data: { trip, members, expenses, memberOpenIds, updatedAt: Date.now() },
+      data: { trip, members, expenses, updatedAt: Date.now() },
     })
     .then(() => undefined)
     .catch(() => undefined)

@@ -127,12 +127,21 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     pushToCloud()
   }
 
-  /** 开启多人协作：把当前快照上传到云端并拿到邀请码；已经开过的话直接返回已有邀请码 */
+  /**
+   * 开启多人协作：把当前快照上传到云端并拿到邀请码；已经开过的话直接返回已有邀请码。
+   * 云函数会把"我"这个成员的 openId 记到云端那份数据上，本机这边也要同步记一下——
+   * 否则本机下次 push 用的还是没带 openId 的旧成员数据，会跟云端对不上。
+   */
   async function inviteCollaborator(): Promise<string> {
     if (!trip.value) throw new Error('no trip loaded')
     if (trip.value.shareCode) return trip.value.shareCode
-    const shareCode = await createShare(trip.value, members.value, expenses.value)
+    const { shareCode, myOpenId } = await createShare(trip.value, members.value, expenses.value)
     trip.value.shareCode = shareCode
+    const me = members.value.find((m) => m.isMe)
+    if (me && !me.openId) {
+      me.openId = myOpenId
+      memberRepo.save(me)
+    }
     touchTrip()
     return shareCode
   }
