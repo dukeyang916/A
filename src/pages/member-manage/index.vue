@@ -6,11 +6,33 @@ import { useTripWorkspaceStore } from '@/stores/tripWorkspace'
 
 const workspace = useTripWorkspaceStore()
 const newName = ref('')
+const inviting = ref(false)
 
 onLoad((query) => {
   const tripId = (query as { tripId: string }).tripId
   workspace.load(tripId)
 })
+
+async function invite() {
+  if (inviting.value) return
+  inviting.value = true
+  try {
+    await workspace.inviteCollaborator()
+  } catch (err) {
+    uni.showToast({ title: err instanceof Error ? err.message : '生成邀请码失败', icon: 'none' })
+  } finally {
+    inviting.value = false
+  }
+}
+
+function copyShareCode() {
+  const code = workspace.trip?.shareCode
+  if (!code) return
+  uni.setClipboardData({
+    data: code,
+    success: () => uni.showToast({ title: '邀请码已复制', icon: 'none' }),
+  })
+}
 
 function addMember() {
   const name = newName.value.trim()
@@ -43,6 +65,24 @@ function removeMember(memberId: string) {
 
 <template>
   <view class="page">
+    <view class="invite-card">
+      <view v-if="workspace.trip?.shareCode" class="invite-row">
+        <view class="invite-info">
+          <text class="invite-label">邀请码，分享给同行的人</text>
+          <text class="invite-code">{{ workspace.trip.shareCode }}</text>
+        </view>
+        <view class="invite-btn" @tap="copyShareCode">
+          <text>复制</text>
+        </view>
+      </view>
+      <view v-else class="invite-row">
+        <text class="invite-label">邀请其他人加入，一起记账</text>
+        <view class="invite-btn" @tap="invite">
+          <text>{{ inviting ? '生成中...' : '邀请协作者' }}</text>
+        </view>
+      </view>
+    </view>
+
     <view class="add-bar">
       <input
         v-model="newName"
@@ -75,6 +115,46 @@ function removeMember(memberId: string) {
 <style scoped>
 .page {
   padding: 24rpx;
+}
+
+.invite-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.invite-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.invite-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.invite-code {
+  font-size: 32rpx;
+  font-weight: 700;
+  letter-spacing: 4rpx;
+}
+
+.invite-btn {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: #fff;
+  background: #1a1a1a;
+  border-radius: 999rpx;
+  padding: 12rpx 28rpx;
 }
 
 .add-bar {

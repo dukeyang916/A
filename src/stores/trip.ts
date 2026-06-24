@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Trip } from '@/types/models'
+import { joinShare } from '@/services/cloudShare'
 import { expenseRepo } from '@/services/expenseRepo'
 import { memberRepo } from '@/services/memberRepo'
 import { tripRepo } from '@/services/tripRepo'
@@ -77,6 +78,20 @@ export const useTripListStore = defineStore('tripList', () => {
     refresh()
   }
 
+  /** 用邀请码加入别人开启的协作行程，把云端快照整份存到本机，之后跟本地行程一样使用 */
+  async function joinTrip(shareCode: string, memberName: string): Promise<Trip> {
+    const result = await joinShare(shareCode, memberName, randomAvatarColor())
+
+    tripRepo.save(result.trip)
+    result.members.forEach((m) => {
+      memberRepo.save({ ...m, isMe: m._id === result.myMemberId })
+    })
+    result.expenses.forEach((e) => expenseRepo.save(e))
+
+    refresh()
+    return result.trip
+  }
+
   /** 首页卡片用：总花费 + "我"的净余额，不需要进入行程详情就能一眼看出该收还是该付 */
   function getTripSummary(tripId: string): TripSummary {
     const members = memberRepo.listByTrip(tripId)
@@ -89,5 +104,5 @@ export const useTripListStore = defineStore('tripList', () => {
     return { totalAmount, myNet }
   }
 
-  return { trips, refresh, createTrip, removeTrip, archiveTrip, getTripSummary }
+  return { trips, refresh, createTrip, removeTrip, archiveTrip, joinTrip, getTripSummary }
 })

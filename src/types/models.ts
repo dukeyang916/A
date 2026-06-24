@@ -41,6 +41,8 @@ export interface Trip {
   /** 是否允许行程数据被匿名聚合/公开展示，默认 false，v1 不开放设置入口 */
   isPublic: boolean
   isArchived: boolean
+  /** 开启多人协作后的邀请码，同时作为云端 shared_trips 文档的 _id；不存在 = 纯本机行程 */
+  shareCode?: string
   createdAt: number
   updatedAt: number
 }
@@ -51,8 +53,10 @@ export interface Member {
   name: string
   /** 头像：v1 用随机色块+取名字首字符，不接微信好友头像 */
   avatarColor: string
-  /** 是否是创建本行程、当前操作设备上的"我" */
+  /** 是否是创建本行程、当前操作设备上的"我"；纯本地字段，云端同步时按设备各自保留 */
   isMe: boolean
+  /** 协作成员对应的微信 openId，本机占位成员（没有自己设备/没加入协作）没有这个字段 */
+  openId?: string
   createdAt: number
 }
 

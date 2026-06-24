@@ -13,6 +13,12 @@
 			}
 		},
 		{
+			"path": "pages/trip-join/index",
+			"style": {
+				"navigationBarTitleText": "加入行程"
+			}
+		},
+		{
 			"path": "pages/trip-detail/index",
 			"style": {
 				"navigationBarTitleText": "行程详情"

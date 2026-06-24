@@ -33,14 +33,23 @@ function goDetail(tripId: string) {
 function goSettings() {
   uni.navigateTo({ url: '/pages/settings/index' })
 }
+
+function goJoin() {
+  uni.navigateTo({ url: '/pages/trip-join/index' })
+}
 </script>
 
 <template>
   <view class="page">
     <view class="header">
       <text class="title">我的行程</text>
-      <view class="settings-entry" @tap="goSettings">
-        <text>设置</text>
+      <view class="header-actions">
+        <view class="header-link" @tap="goJoin">
+          <text>加入行程</text>
+        </view>
+        <view class="header-link" @tap="goSettings">
+          <text>设置</text>
+        </view>
       </view>
     </view>
 
@@ -99,7 +108,12 @@ function goSettings() {
   font-weight: 700;
 }
 
-.settings-entry {
+.header-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.header-link {
   font-size: 26rpx;
   color: #888;
 }

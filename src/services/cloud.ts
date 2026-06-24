@@ -4,19 +4,28 @@ import type { ExpenseCategory, Member } from '@/types/models'
 
 const NOT_SUPPORTED_ERROR = 'AI 录入功能仅支持微信小程序'
 
-function isCloudReady(): boolean {
+/** services/cloudShare.ts 等其他云相关模块共用这个判断，不重复写一遍 */
+export function isCloudReady(): boolean {
   return typeof wx !== 'undefined' && !!wx.cloud && !!CLOUD_ENV_ID
 }
 
-// 三个云函数失败时都返回 { error: string } 而不是抛异常，这里统一转成 throw，
+// 云函数失败时都返回 { error: string } 而不是抛异常，这里统一转成 throw，
 // 调用方就能用普通的 try/catch，不用每次都检查返回值里有没有 error 字段。
-function callFunction<T>(name: string, data: Record<string, unknown>): Promise<T> {
-  if (!isCloudReady()) return Promise.reject(new Error(NOT_SUPPORTED_ERROR))
+export function callCloudFunction<T>(
+  name: string,
+  data: Record<string, unknown>,
+  notReadyMessage: string = NOT_SUPPORTED_ERROR
+): Promise<T> {
+  if (!isCloudReady()) return Promise.reject(new Error(notReadyMessage))
   return wx.cloud.callFunction({ name, data }).then((res) => {
     const result = res.result as T & { error?: string }
     if (result?.error) throw new Error(result.error)
     return result
   })
+}
+
+function callFunction<T>(name: string, data: Record<string, unknown>): Promise<T> {
+  return callCloudFunction<T>(name, data)
 }
 
 /** 把本地临时文件（录音/照片）上传到云存储，返回云函数能直接用的 fileID */

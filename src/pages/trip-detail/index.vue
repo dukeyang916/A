@@ -12,7 +12,10 @@ onLoad((query) => {
 })
 
 onShow(() => {
-  if (tripId.value) workspace.load(tripId.value)
+  if (!tripId.value) return
+  workspace.load(tripId.value)
+  // 协作行程顺便拉一下云端最新数据，没开协作或同步失败时是 no-op，不影响本地数据正常展示
+  workspace.syncFromCloud()
 })
 
 function formatDateRange(start: string, end: string): string {

@@ -9,6 +9,7 @@ import type {
   SplitMethod,
   Trip,
 } from '@/types/models'
+import { createShare, pullShare, pushShare } from '@/services/cloudShare'
 import { expenseRepo } from '@/services/expenseRepo'
 import { memberRepo } from '@/services/memberRepo'
 import { tripRepo } from '@/services/tripRepo'
@@ -56,6 +57,12 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     tripRepo.save(trip.value)
   }
 
+  /** 开了协作的行程，每次本地改动后顺便同步一份到云端；失败静默，不影响本地操作 */
+  function pushToCloud(): void {
+    if (!trip.value?.shareCode) return
+    pushShare(trip.value._id, trip.value, members.value, expenses.value)
+  }
+
   function addMember(name: string): Member {
     if (!trip.value) throw new Error('no trip loaded')
     const member: Member = {
@@ -68,6 +75,8 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     }
     memberRepo.save(member)
     members.value.push(member)
+    touchTrip()
+    pushToCloud()
     return member
   }
 
@@ -79,6 +88,8 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     if (inUse) return false
     memberRepo.remove(memberId)
     members.value = members.value.filter((m) => m._id !== memberId)
+    touchTrip()
+    pushToCloud()
     return true
   }
 
@@ -95,6 +106,7 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     expenseRepo.save(expense)
     expenses.value.unshift(expense)
     touchTrip()
+    pushToCloud()
     return expense
   }
 
@@ -105,12 +117,52 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     expenses.value[index] = updated
     expenseRepo.save(updated)
     touchTrip()
+    pushToCloud()
   }
 
   function removeExpense(expenseId: string): void {
     expenses.value = expenses.value.filter((e) => e._id !== expenseId)
     expenseRepo.remove(expenseId)
     touchTrip()
+    pushToCloud()
+  }
+
+  /** 开启多人协作：把当前快照上传到云端并拿到邀请码；已经开过的话直接返回已有邀请码 */
+  async function inviteCollaborator(): Promise<string> {
+    if (!trip.value) throw new Error('no trip loaded')
+    if (trip.value.shareCode) return trip.value.shareCode
+    const shareCode = await createShare(trip.value, members.value, expenses.value)
+    trip.value.shareCode = shareCode
+    touchTrip()
+    return shareCode
+  }
+
+  /**
+   * 从云端拉取最新快照，只有云端比本地新时才覆盖本地（整份覆盖，不做字段级合并）。
+   * isMe 是纯本地概念，按成员 id 从本地旧数据里找回来，云端没见过的新成员（比如刚加入的
+   * 协作者）才会落到默认的 isMe=false。
+   */
+  async function syncFromCloud(): Promise<void> {
+    if (!trip.value?.shareCode) return
+    const tripId = trip.value._id
+    const snapshot = await pullShare(tripId)
+    if (!snapshot || snapshot.updatedAt <= trip.value.updatedAt) return
+
+    const localIsMeById = new Map(members.value.map((m) => [m._id, m.isMe]))
+    const mergedMembers = snapshot.members.map((m) => ({
+      ...m,
+      isMe: localIsMeById.get(m._id) ?? false,
+    }))
+
+    memberRepo.removeByTrip(tripId)
+    expenseRepo.removeByTrip(tripId)
+    mergedMembers.forEach((m) => memberRepo.save(m))
+    snapshot.expenses.forEach((e) => expenseRepo.save(e))
+    tripRepo.save(snapshot.trip)
+
+    trip.value = snapshot.trip
+    members.value = mergedMembers
+    expenses.value = snapshot.expenses
   }
 
   return {
@@ -126,5 +178,7 @@ export const useTripWorkspaceStore = defineStore('tripWorkspace', () => {
     addExpense,
     updateExpense,
     removeExpense,
+    inviteCollaborator,
+    syncFromCloud,
   }
 })
