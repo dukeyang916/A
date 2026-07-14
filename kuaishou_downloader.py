@@ -394,7 +394,12 @@ def download_video(info: VideoInfo, out_dir: str, opener=None) -> Optional[str]:
 def read_inputs(args: argparse.Namespace) -> list[str]:
     items: list[str] = []
     if args.input:
-        with open(args.input, "r", encoding="utf-8") as f:
+        if not os.path.exists(args.input):
+            log(f"错误：找不到文件 {os.path.abspath(args.input)}")
+            log("请先在当前目录创建该文件，每行粘贴一条快手分享链接/文案，例如：")
+            log("  3.65 复制打开快手，看看【某某的作品】https://v.kuaishou.com/xxxxxx")
+            sys.exit(1)
+        with open(args.input, "r", encoding="utf-8-sig") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):
